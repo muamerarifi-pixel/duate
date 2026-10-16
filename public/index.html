@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#D3A94C">
+<meta name="msapplication-TileColor" content="#0E1A1D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Duatë">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Duatë pas Namazit">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+
+<title>Duatë pas Namazit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0E1A1D; --surface: #152528; --surface-2: #1B2E32;
+    --ivory: #F3EDDD; --ivory-dim: #C9C4B4; --gold: #D3A94C;
+    --muted: #8AA098; --hairline: rgba(243,237,221,.14);
+    --display: 'Fraunces', Georgia, serif;
+    --body: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+    --arabic: 'Amiri', serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--ivory); font-family: var(--body); }
+  button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+  #home { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+  .h-eyebrow { color: var(--gold); font-size: 13px; letter-spacing: .22em; text-transform: uppercase; margin-bottom: 8px; }
+  .h-title { font-family: var(--display); font-weight: 600; font-size: 32px; line-height: 1.1; margin-bottom: 8px; }
+  .h-sub { color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 18px; }
+  #search {
+    width: 100%; background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 12px; color: var(--ivory); font-size: 16px; font-family: var(--body);
+    padding: 14px 16px; margin-bottom: 14px; transition: border-color 0.2s;
+  }
+  #search:focus { border-color: var(--gold); outline: none; }
+  #search::placeholder { color: var(--muted); }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 8px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none; padding: 9px 15px; border-radius: 999px; font-size: 14px;
+    background: var(--surface); border: 1px solid var(--hairline); color: var(--ivory-dim);
+    min-height: 40px; transition: all 0.2s;
+  }
+  .chip.active { background: var(--gold); color: #161307; border-color: var(--gold); font-weight: 700; }
+  #count { color: var(--muted); font-size: 13px; margin: 4px 2px 12px; }
+  .dua-list { display: flex; flex-direction: column; gap: 10px; }
+  .dua-card {
+    width: 100%; text-align: left; background: var(--surface);
+    border: 1px solid var(--hairline); border-radius: 13px;
+    padding: 14px 16px; display: flex; gap: 12px; align-items: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .dua-card:active { background: var(--surface-2); transform: scale(0.98); }
+  .dc-body { flex: 1; min-width: 0; }
+  .dc-title { display: block; font-family: var(--display); font-size: 18px; font-weight: 500; margin-bottom: 4px; line-height: 1.25; }
+  .dc-prev { display: block; color: var(--muted); font-size: 13.5px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .dc-star { flex: none; color: var(--gold); font-size: 18px; opacity: 0; width: 22px; text-align: center; }
+  .dc-star.on { opacity: 1; }
+  .empty { color: var(--muted); text-align: center; padding: 40px 20px; font-size: 15px; line-height: 1.5; }
+
+  #detail { display: none; max-width: 680px; margin: 0 auto; min-height: 100dvh; flex-direction: column; }
+  #detail.open { display: flex; }
+  #home.hidden { display: none; }
+  .d-top {
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline);
+  }
+  .d-back { font-size: 15px; color: var(--ivory-dim); padding: 12px 14px; border-radius: 10px; background: var(--surface); min-height: 48px; transition: background 0.2s; }
+  .d-back:active { background: var(--surface-2); }
+  .d-idx { flex: 1; text-align: center; color: var(--muted); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+  .d-actions { display: flex; gap: 8px; }
+  .d-actions button { min-width: 50px; min-height: 48px; border-radius: 10px; background: var(--surface); font-size: 18px; font-weight: 700; transition: background 0.2s; }
+  .d-actions button:active { background: var(--surface-2); }
+  #btnFav.on { color: var(--gold); }
+  
+  .d-scroll { flex: 1; padding: 22px 18px 20px; }
+  .d-cat { color: var(--gold); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 8px; }
+  .d-title { font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1.2; margin-bottom: 24px; color: var(--ivory); }
+  
+  /* Styling for the content blocks (Arabic, Translit, Translation, Source) */
+  .d-label {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .15em; 
+    text-transform: uppercase; margin: 32px 0 12px; border-bottom: 1px solid var(--hairline);
+    padding-bottom: 6px;
+  }
+  .d-label::before { content: ""; display: block; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; }
+
+  #dAr { font-family: var(--arabic); line-height: 1.9; color: var(--ivory); }
+  #dTr { line-height: 1.65; font-style: italic; color: var(--ivory-dim); }
+  #dSq { line-height: 1.6; color: var(--ivory); font-weight: 500; }
+  
+  .d-info-block {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px;
+    padding: 16px; font-size: 15px; line-height: 1.6; color: var(--ivory-dim); margin-top: 12px;
+  }
+  .d-info-block p { margin-bottom: 10px; }
+  .d-info-block p:last-child { margin-bottom: 0; }
+  .d-info-block strong { color: var(--gold); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 4px; }
+
+  .d-nav {
+    position: sticky; bottom: 0; background: var(--bg); border-top: 1px solid var(--hairline);
+    display: flex; gap: 10px; padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+  .d-nav button {
+    flex: 1; min-height: 64px; border-radius: 14px; background: var(--surface);
+    border: 1px solid var(--hairline); font-size: 16px; font-weight: 700; color: var(--ivory);
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  .d-nav button:active { transform: scale(0.97); }
+  .d-nav button:disabled { opacity: .35; pointer-events: none; }
+  .d-nav .primary { background: var(--gold); color: #161307; border-color: var(--gold); }
+</style>
+</head>
+<body>
+
+<main id="home">
+  <div class="h-eyebrow">Pas namazit</div>
+  <h1 class="h-title">Duatë</h1>
+  <p class="h-sub">74 lutje me tekst arab me hareke, transliterim, përkthim shqip, burim dhe kuptim. Shëno me &#9733; ato që i lexon rregullisht.</p>
+  <input id="search" type="search" placeholder="Kërko dua...">
+  <div class="chips" id="chips"></div>
+  <div id="count"></div>
+  <div class="dua-list" id="duaList"></div>
+  <div class="empty" id="emptyMsg" style="display:none">Asnjë dua nuk u gjet. Provo një kërkim tjetër.</div>
+</main>
+
+<section id="detail">
+  <div class="d-top">
+    <button class="d-back" id="btnBack">&#8592; Lista</button>
+    <div class="d-idx" id="dIdx"></div>
+    <div class="d-actions">
+      <button id="btnFav" aria-label="Shto te të preferuarat">&#9733;</button>
+      <button id="fontDown" aria-label="Zvogëlo tekstin">A&#8722;</button>
+      <button id="fontUp" aria-label="Zmadho tekstin">A+</button>
+    </div>
+  </div>
+  <div class="d-scroll" id="dScroll">
+    <div class="d-cat" id="dCat"></div>
+    <h2 class="d-title" id="dTitle"></h2>
+    
+    <div class="d-label">Teksti Arab</div>
+    <div id="dAr" dir="rtl"></div>
+    
+    <div class="d-label">Transliterimi (Leximi)</div>
+    <div id="dTr"></div>
+    
+    <div class="d-label">Përkthimi Shqip</div>
+    <div id="dSq"></div>
+    
+    <div class="d-label">Burimi & Kuptimi</div>
+    <div class="d-info-block" id="dInfoBody"></div>
+  </div>
+  <div class="d-nav">
+    <button id="btnPrev">&#8592; E mëparshme</button>
+    <button id="btnNext" class="primary">Tjetra &#8594;</button>
+  </div>
+</section>
+
+<script>
+const CATS = ["Dhikër & Lavdërim", "Falje & Pendim", "Mbrojtje", "Zemra & Udhëzimi", "Vështirësi & Qetësi", "Rrizk & Furnizim", "Familja", "Gjithëpërfshirëse"];
+
+const DUAS = [
+  { t: "Dhikri i Shumëfishuar", c: 0,
+    ar: "سُبْحَانَ اللَّهِ عَدَدَ مَا خَلَقَ، سُبْحَانَ اللَّهِ مِلْءَ مَا خَلَقَ، سُبْحَانَ اللَّهِ عَدَدَ مَا فِي الْأَرْضِ وَالسَّمَاءِ، سُبْحَانَ اللَّهِ مِلْءَ مَا فِي الْأَرْضِ وَالسَّمَاءِ، سُبْحَانَ اللَّهِ عَدَدَ مَا أَحْصَى كِتَابُهُ، سُبْحَانَ اللَّهِ مِلْءَ مَا أَحْصَى كِتَابُهُ، سُبْحَانَ اللَّهِ عَدَدَ كُلِّ شَيْءٍ، سُبْحَانَ اللَّهِ مِلْءَ كُلِّ شَيْءٍ.",
+    tr: "Subhanallahi 'adada ma khalaq, Subhanallahi mil'a ma khalaq, Subhanallahi 'adada ma fil-ardhi was-sama', Subhanallahi mil'a ma fil-ardhi was-sama', Subhanallahi 'adada ma ahsa kitabuhu, Subhanallahi mil'a ma ahsa kitabuhu, Subhanallahi 'adada kulli shay'in, Subhanallahi mil'a kulli shay'in.",
+    sq: "Lavdi i qoftë Allahut sa numri i asaj që Ai ka krijuar, Lavdi i qoftë Allahut sa çfarë e mbush atë që Ai ka krijuar, Lavdi i qoftë Allahut sa numri i asaj që ndodhet në tokë dhe qiell... (vazhdon e njëjta llogari për falënderimin “Elhamdulilah”).",
+    src: "Hadith (Mësuar nga Profeti a.s. sahabit Ebu Umame).",
+    k: "Kjo njihet si “Dhikri i Shumëfishuar”. Në vend që ta falënderosh Zotin vetëm një herë, ti lutesh që lavdërimi yt të peshojë sa numri i çdo gjëje që Ai ka krijuar në univers. Është një tregues i një zemre që dëshiron ta madhërojë Zotin pafundësisht." },
+  
+  { t: "Emri më i Madh i Allahut", c: 7,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ بِأَنِّي أَشْهَدُ أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلَّا أَنْتَ، الْأَحَدُ الصَّمَدُ الَّذِي لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ.",
+    tr: "Allahumma inni as'aluka bi-anni ash-hadu annaka Antallahu la ilaha illa Ant, Al-Ahadus-Samadul-ladhi lam yalid wa lam yulad, wa lam yakun lahu kufuwan ahad.",
+    sq: "O Allah, unë të lutem Ty duke dëshmuar se Ti je Allahu, nuk ka Zot tjetër përveç Teje, i Vetmi, i Vetëmjaftueshmi, Ai që nuk ka lindur askënd dhe nuk është i lindur nga askush, dhe askush nuk është i barabartë me Të.",
+    src: "Hadith (Transmetuar në Sunen).",
+    k: "Profeti (a.s.) dëgjoi një burrë duke bërë këtë lutje dhe i tha: “Ai i është lutur Allahut me Emrin e Tij më të Madh (Ismullah el-A'dham), me të cilin, nëse lutet, Ai i përgjigjet.” Kjo dua thekson monoteizmin absolut (Suren El-Ihlas)." },
+  
+  { t: "Lutja e Nevojës së Thellë (El-Mennan)", c: 4,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ بِأَنَّ لَكَ الْحَمْدَ، لَا إِلَهَ إِلَّا أَنْتَ الْمَنَّانُ، بَدِيعُ السَّمَاوَاتِ وَالْأَرْضِ، يَا ذَا الْجَلَالِ وَالْإِكْرَامِ، يَا حَيُّ يَا قَيُّومُ.",
+    tr: "Allahumma inni as'aluka bi-anna lakal-hamd. La ilaha illa Ant, Al-Mannan, Badi'us-samawati wal-ardh. Ya Dhal-Jalali wal-Ikram, Ya Hayyu Ya Qayyum.",
+    sq: "O Allah, unë të lutem Ty, sepse Ty të takon i gjithë falënderimi. Nuk ka zot tjetër përveç Teje, Dhuruesi i madh, Krijuesi i qiejve dhe i tokës. O Pronar i Madhështisë dhe Nderimit, O i Gjalli, O i Përjetshmi.",
+    src: "Hadith (Nga i njëjti grup i haditheve për Emrin më të Madh).",
+    k: "Një lutje që i njeh Zotit epitetin “El-Mennan” (Dhuruesi i pamasë). Përdoret kur njeriu është në nevojë të thellë për mirësinë dhe dhuratat hyjnore." },
+  
+  { t: "Dhikri i Xhuvejrijes", c: 0,
+    ar: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ.",
+    tr: "Subhanallahi wa bihamdihi 'adada khalqihi, wa ridha nafsihi, wa zinata 'arshihi, wa midada kalimatih.",
+    sq: "Lavdi i qoftë Allahut dhe Atij i takon falënderimi, sa numri i krijesave të Tij, sa kënaqësia e Tij, sa pesha e Arshit të Tij dhe sa ngjyra e fjalëve të Tij.",
+    src: "Hadith (Sahih Muslim). Profeti (a.s.) ia mësoi bashkëshortes së tij, Xhuvejrijes.",
+    k: "Ajo kishte qëndruar me orë të tëra duke bërë dhikër. Profeti i tha se këto pak fjalë, po të peshoheshin, do të rëndonin më shumë se të gjitha orët që ajo kishte kaluar duke u lutur, për shkak të peshës së madhe që kanë tek Arshi i Zotit." },
+  
+  { t: "Hasbijallah — Më mjafton Allahu", c: 4,
+    ar: "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ ۖ عَلَيْهِ تَوَكَّلْتُ ۖ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.",
+    tr: "Hasbiyallahu la ilaha illa Huwa 'alayhi tawakkaltu wa Huwa Rabbul-'arshil-'adhim.",
+    sq: "Më mjafton Allahu. Nuk ka zot tjetër përveç Tij. Tek Ai mbështetem dhe Ai është Zoti i Arshit të Madh.",
+    src: "Kuran (Surja Et-Teube, Ajeti 129). Gjithashtu synet për t'u thënë në mëngjes dhe në mbrëmje.",
+    k: "Është lutja e dorëzimit absolut. Kur ndihesh i pafuqishëm, i rrethuar nga problemet apo armiqtë, kjo lutje i thotë zemrës: “Unë s'kam fuqi, por Mbrojtësi im zotëron Fronin e Universit.”" },
+
+  { t: "Duaja e Dëshpërimit (Dua el-Karb)", c: 4,
+    ar: "لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ.",
+    tr: "La ilaha illallahul-'Adhimul-Halim, la ilaha illallahu Rabbul-'Arshil-'Adhim, la ilaha illallahu Rabbus-samawati wa Rabbul-ardhi wa Rabbul-'Arshil-Karim.",
+    sq: "Nuk ka zot tjetër përveç Allahut, të Madhërishmit, të Butit. Nuk ka zot tjetër përveç Allahut, Zotit të Arshit të Madh. Nuk ka zot tjetër përveç Allahut, Zotit të qiejve, Zotit të tokës dhe Zotit të Arshit të Nderuar.",
+    src: "Hadith (Sahih Buhari dhe Muslim). Njihet si Dua el-Karb (Duaja e Dëshpërimit/Ankthit).",
+    k: "Profeti (a.s.) e thoshte këtë sa herë që e kaplonte një mërzi e madhe ose një situatë tepër e rëndë. Ajo nuk kërkon diçka specifike, por qetëson panikun duke lartësuar Madhështinë e Zotit." },
+  
+  { t: "Mbrojtja nga vetja dhe shejtani", c: 2,
+    ar: "اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ، فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءًا أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ.",
+    tr: "Allahumma 'Alimal-ghaybi wash-shahadah, fatiras-samawati wal-ardh, Rabba kulli shay'in wa malikah. Ash-hadu an la ilaha illa Ant. A'udhu bika min sharri nafsi, wa min sharrish-shaytani wa shirkih, wa an aqtarifa 'ala nafsi su'an aw ajurrahu ila muslim.",
+    sq: "O Allah, Njohësi i të fshehtës dhe të dukshmes, Krijuesi i qiejve dhe i tokës, Zoti dhe Sunduesi i çdo gjëje! Dëshmoj se nuk ka zot tjetër përveç Teje. Kërkoj mbrojtjen Tënde nga e keqja e vetvetes sime, nga e keqja e shejtanit dhe shirkut (idhujtarisë) të tij, si dhe kërkoj mbrojtje që të mos i bëj keq vetvetes sime ose t'i sjell ndonjë të keqe një muslimani.",
+    src: "Hadith. Profeti (a.s.) ia mësoi shokut të tij më të ngushtë, Ebu Bekrit, për ta thënë çdo mëngjes e mbrëmje.",
+    k: "Është një mburojë e fuqishme psikologjike. Njeriu i kërkon Zotit ta mbrojë nga armiku i tij i brendshëm (egoja/epshi i keq) dhe nga armiku i jashtëm (shejtani)." },
+  
+  { t: "Duaja e Namazit të Nevojës", c: 7,
+    ar: "لَا إِلَهَ إِلَّا اللَّهُ الْحَلِيمُ الْكَرِيمُ، سُبْحَانَ اللَّهِ رَبِّ الْعَرْشِ الْعَظِيمِ، الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ، أَسْأَلُكَ مُوجِبَاتِ رَحْمَتِكَ، وَعَزَائِمَ مَغْفِرَتِكَ، وَالْغَنِيمَةَ مِنْ كُلِّ بِرٍّ، وَالسَّلَامَةَ مِنْ كُلِّ إِثْمٍ، لَا تَدَعْ لِي ذَنْبًا إِلَّا غَفَرْتَهُ، وَلَا هَمًّا إِلَّا فَرَّجْتَهُ، وَلَا حَاجَةً هِيَ لَكَ رِضًا إِلَّا قَضَيْتَهَا يَا أَرْحَمَ الرَّاحِمِينَ.",
+    tr: "La ilaha illallahul-Halimul-Karim, subhanallahi Rabbil-'arshil-'adhim. Alhamdu lillahi Rabbil-'alamin. As'aluka mujibati rahmatik, wa 'aza'ima maghfiratik, wal-ghanimata min kulli birrin, was-salamata min kulli ithmin. La tada' li dhanban illa ghafartah, wa la hamman illa farrajtah, wa la hajatan hiya laka ridan illa qadaytaha, Ya Arhamar-Rahimin.",
+    sq: "Nuk ka zot tjetër përveç Allahut, të Butit, Bujarit. I dëlirë nga të metat është Allahu, Zoti i Arshit të Madh. Falënderimi i takon Allahut, Zotit të botëve! Unë kërkoj prej Teje ato që e bëjnë të domosdoshme mëshirën Tënde, ato që sjellin patjetër faljen Tënde, kërkoj përfitim nga çdo punë e mirë dhe shpëtim nga çdo mëkat. Mos lër asnjë mëkat timin pa ma falur, asnjë brengë pa ma larguar, dhe asnjë nevojë në të cilën është kënaqësia Jote pa ma plotësuar, O Mëshiruesi më i madh i të mëshirshmëve!",
+    src: "Hadith (Tirmidhiu). Njihet si Duaja e Salatul-Haxheh (Namazit të Nevojës).",
+    k: "Kur një njeri ka një hall specifik, kjo lutje përdoret si parathënie para se t'i kërkojë Zotit atë që i duhet. Është formula e mirësjelljes supreme me Krijuesin." },
+  
+  { t: "Lutja e Natës së Kadrit", c: 1,
+    ar: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي.",
+    tr: "Allahumma innaka 'Afuwwun tuhibbul-'afwa fa'fu 'anni.",
+    sq: "O Allah! Vërtet, Ti je Falësi më i Madh, Ti e do faljen, ndaj më fal mua.",
+    src: "Hadith. Profeti (a.s.) ia mësoi Aishes (r.a.) për ta thënë gjatë Natës së Kadrit.",
+    k: "“Afuww” nuk do të thotë thjesht “të fal”, por “të fshijë sikur të mos kishte ndodhur kurrë”. Është lutja më e rëndësishme e muajit të Ramazanit." },
+  
+  { t: "Lutja e Junusit (a.s.)", c: 1,
+    ar: "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ.",
+    tr: "La ilaha illa Anta, subhanaka inni kuntu minadh-dhalimin.",
+    sq: "Nuk ka zot tjetër përveç Teje! Qofsh i lavdëruar! Vërtet, unë kam qenë prej të padrejtëve.",
+    src: "Kuran (Surja El-Enbija, Ajeti 87). Lutja e Profetit Junus (a.s.) në barkun e balenës.",
+    k: "Është formula e shpëtimit nga errësira. Pranon gabimin dhe e pranon Zotin si të vetmin shpëtimtar. Profeti (a.s.) tha se asnjë besimtar nuk lutet me të pa iu përgjigjur Zoti." },
+  
+  { t: "Sejjid el-Istigfar — Mbreti i Faljes", c: 1,
+    ar: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ.",
+    tr: "Allahumma Anta Rabbi la ilaha illa Ant. Khalaqtani wa ana 'abduk, wa ana 'ala 'ahdika wa wa'dika mastata'tu. A'udhu bika min sharri ma sana'tu, abu'u laka bini'matika 'alayya, wa abu'u laka bidhanbi faghfir li fa-innahu la yaghfirudh-dhunuba illa Ant.",
+    sq: "O Allah, Ti je Zoti im, nuk ka zot tjetër përveç Teje. Ti më ke krijuar dhe unë jam robi Yt. Unë i qëndroj besnik besëlidhjes dhe premtimit Tënd sa të mundem. Kërkoj mbrojtjen Tënde nga e keqja që kam bërë. I pranoj të mirat e Tua ndaj meje dhe e pranoj mëkatin tim, ndaj më fal, sepse askush nuk i fal mëkatet përveç Teje.",
+    src: "Hadith (Sahih Buhari). Njihet si Sejjid el-Istigfar (Mbreti i lutjeve të faljes).",
+    k: "Kjo lutje është një kontratë besnikërie me Zotin. Profeti tha se kush e thotë këtë në mëngjes me bindje dhe vdes atë ditë, hyn në Xhenet." },
+  
+  { t: "Fundi i Sures Bekare", c: 7,
+    ar: "رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ.",
+    tr: "Rabbana la tu'akhidhna in nasina aw akhta'na, Rabbana wa la tahmil 'alayna isran kama hamaltahu 'alal-ladhina min qablina, Rabbana wa la tuhammilna ma la taqata lana bih, wa'fu 'anna waghfir lana warhamna, Anta mawlana fansurna 'alal-qawmil-kafirin.",
+    sq: "Zoti ynë, mos na ndëshko nëse harrojmë ose gabojmë! Zoti ynë, mos na ngarko barrë të rëndë ashtu siç i ngarkove ata para nesh! Zoti ynë, mos na ngarko me atë që nuk kemi fuqi ta mbajmë! Na i shlyej gjynahet, na i fal ato dhe na mëshiro! Ti je Mbrojtësi ynë, prandaj na ndihmo kundër popullit mosbesimtar!",
+    src: "Kuran (Surja El-Bekare, Ajetet 285-286).",
+    k: "Këto janë dy ajetet e fundit të Sures Bekare, për të cilat Profeti (a.s.) tha se janë zbritur nga një thesar nën Arshin e Zotit. Ato janë një kërkesë e përhershme për lehtësim nga barrët e rënda të jetës." },
+  
+  { t: "Pendim para vdekjes", c: 1,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ تَوْبَةً قَبْلَ الْمَوْتِ، وَرَاحَةً عِنْدَ الْمَوْتِ، وَرَحْمَةً بَعْدَ الْمَوْتِ، وَالْعَفْوَ عِنْدَ الْحِسَابِ.",
+    tr: "Allahumma inni as'aluka tawbatan qablal-mawt, wa rahatan 'indal-mawt, wa rahmatan ba'dal-mawt, wal-'afwa 'indal-hisab.",
+    sq: "O Allah, unë kërkoj nga Ti pendim para vdekjes, lehtësim në prag të vdekjes, mëshirë pas vdekjes dhe falje gjatë llogarisë.",
+    src: "Lutje e përgjithshme (Ma'thur), e njohur në traditën islame.",
+    k: "Shfaq një vizion afatgjatë të jetës. Besimtari nuk shqetësohet vetëm për sot, por kërkon një tranzicion të lehtë dhe të ndritur drejt jetës tjetër." },
+  
+  { t: "Pastrimi i zemrës dhe dëlirësia", c: 1,
+    ar: "اللَّهُمَّ اغْفِرْ ذَنْبِي، وَطَهِّرْ قَلْبِي، وَحَصِّنْ فَرْجِي.",
+    tr: "Allahummaghfir dhanbi, wa tahhir qalbi, wa hassin farji.",
+    sq: "O Allah, m'i fal mëkatet e mia, ma pastro zemrën time dhe ma ruaj dëlirësinë time.",
+    src: "Hadith (Musnad Ahmed).",
+    k: "Profeti (a.s.) e bëri këtë lutje duke i vendosur dorën në gjoks një të riu i cili i kërkoi leje për të bërë imoralitet. Është receta më e mirë për këdo që lufton me epshet dhe tundimet." },
+  
+  { t: "Falja dhe pranimi i pendimit", c: 1,
+    ar: "اللَّهُمَّ اغْفِرْ لِي وَتُبْ عَلَيَّ، إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ.",
+    tr: "Allahummaghfir li wa tub 'alayya, innaka Antat-Tawwabur-Rahim.",
+    sq: "O Allah, më fal dhe pranoje pendimin tim, vërtet Ti je Pranuesi i pendimeve dhe Mëshirëploti.",
+    src: "Hadith (Ebu Daud).",
+    k: "Shokët e Profetit numëronin se ai e thoshte këtë lutje deri në 100 herë brenda një ulimi të vetëm. Tregon nevojën e vazhdueshme të njeriut për t'u pastruar shpirtërisht çdo ditë." },
+
+  { t: "Falja Jote është më e gjerë", c: 1,
+    ar: "اللَّهُمَّ مَغْفِرَتُكَ أَوْسَعُ مِنْ ذُنُوبِي، وَرَحْمَتُكَ أَرْجَى عِنْدِي مِنْ عَمَلِي.",
+    tr: "Allahumma maghfiratuka awsa'u min dhunubi, wa rahmatuka arja 'indi min 'amali.",
+    sq: "O Allah, falja Jote është më e gjerë se mëkatet e mia, dhe te mëshira Jote kam më shumë shpresë sesa te veprat e mia.",
+    src: "Hadith (El-Hakim).",
+    k: "Një burrë erdhi duke qarë te Profeti për shkak të mëkateve të tij të shumta, dhe ai ia mësoi këtë lutje. Është mjeti kundër dëshpërimit: mëkatet e tua mund të jenë të mëdha, por mëshira e Zotit është më e madhe." },
+  
+  { t: "Largimi i zemërimit", c: 1,
+    ar: "اللَّهُمَّ رَبَّ مُحَمَّدٍ، اغْفِرْ لِي ذَنْبِي، وَأَذْهِبْ غَيْظَ قَلْبِي، وَأَعِذْنِي مِنْ مُضِلَّاتِ الْفِتَنِ.",
+    tr: "Allahumma Rabba Muhammad, ighfir li dhanbi, wa adh-hib ghayza qalbi, wa a'idhni min mudillatil-fitan.",
+    sq: "O Allah, Zoti i Muhamedit, më fal mëkatin tim, largoje zemërimin nga zemra ime dhe më mbro nga sprovat humbëse (që devijojnë).",
+    src: "Hadith (Ahmedi). Ia mësoi bashkëshortes së tij.",
+    k: "Fillon me faljen e mëkatit, kalon te shërimi i emocioneve (“largoje zemërimin nga zemra ime”) dhe përfundon me kërkesën për mbrojtje nga devijimi. Është shëruese për stresin dhe inatin." },
+  
+  { t: "Mirënjohja totale (Ibrahimi a.s.)", c: 0,
+    ar: "اللَّهُمَّ أَنْتَ خَلَقْتَنِي وَأَنْتَ تَهْدِينِي، وَأَنْتَ تُطْعِمُنِي وَأَنْتَ تَسْقِينِي، وَأَنْتَ تُمِيتُنِي وَأَنْتَ تُحْيِينِي.",
+    tr: "Allahumma Anta khalaqtani wa Anta tahdini, wa Anta tut'imuni wa Anta tasqini, wa Anta tumituni wa Anta tuhyini.",
+    sq: "O Allah, Ti më ke krijuar dhe Ti më udhëzon. Ti më ushqen dhe Ti më jep për të pirë. Ti ma merr shpirtin dhe Ti më ringjall.",
+    src: "Lutje e nxjerrë nga fjalët e Profetit Ibrahim (a.s.) në Kuran (Sureja Esh-Shu'ara 26:78-81).",
+    k: "Është formula e mirënjohjes totale. I rikujton besimtarit se çdo frymëmarrje, çdo kafshatë, rruga e drejtë dhe vetë ekzistenca janë dhurata direkte nga Krijuesi." },
+  
+  { t: "O Rrotullues i zemrave", c: 3,
+    ar: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ.",
+    tr: "Ya Muqallibal-qulub, thabbit qalbi 'ala dinik.",
+    sq: "O Rrotullues i zemrave, përforcoje zemrën time në fenë Tënde.",
+    src: "Hadith (Tirmidhiu).",
+    k: "Bashkëshortja e Profetit, Ummu Seleme, tha se kjo ishte lutja që ai e thoshte më së shpeshti nga të gjitha. Tregon se zemra njerëzore është e dobët dhe ndryshon shpesh (prandaj quhet “Qalb”), dhe ne kemi nevojë për Zotin që ta mbajë atë të palëkundur në të vërtetën." },
+  
+  { t: "Udhëzim, devotshmëri, dëlirësi, pavarësi", c: 3,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى.",
+    tr: "Allahumma inni as'alukal-huda wat-tuqa wal-'afafa wal-ghina.",
+    sq: "O Allah, unë kërkoj nga Ti udhëzimin, devotshmërinë, dëlirësinë dhe pavarësinë (nga njerëzit).",
+    src: "Hadith (Sahih Muslim).",
+    k: "Kjo është një nga duatë më gjithëpërfshirëse. Ajo përmbledh të gjitha nevojat jetësore në katër fjalë: Huda (të dish çfarë është e drejtë), Tuka (të kesh frikë t'i bësh keq dikujt), Afaf (të kesh nder/dëlirësi) dhe Gina (të mos kesh nevojë të lypësh apo t'u varesh njerëzve, por vetëm Zotit)." },
+  
+  { t: "Pastrimi i shpirtit", c: 3,
+    ar: "اللَّهُمَّ آتِ نَفْسِي تَقْوَاهَا، وَزَكِّهَا أَنْتَ خَيْرُ مَنْ زَكَّاهَا، أَنْتَ وَلِيُّهَا وَمَوْلَاهَا.",
+    tr: "Allahumma ati nafsi taqwaha, wa zakkiha Anta khayru man zakkaha, Anta waliyyuha wa mawlaha.",
+    sq: "O Allah, jipi shpirtit tim devotshmërinë e tij dhe pastroje atë. Ti je Pastruesi më i mirë i tij; Ti je Mbrojtësi dhe Zotëruesi i tij.",
+    src: "Hadith (Sahih Muslim).",
+    k: "Kjo është lutja për vetëkontroll dhe pastërti shpirtërore. Ti i kërkon Zotit ta “stërvitë” nefsin tënd që të jetë i devotshëm. Përfundon me pranimin se vetëm Allahu është Pronari dhe Mbrojtësi i vërtetë i shpirtit tonë." },
+  
+  { t: "Ndihmë për dhikër e falënderim", c: 3,
+    ar: "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ.",
+    tr: "Allahumma a'inni 'ala dhikrika wa shukrika wa husni 'ibadatik.",
+    sq: "O Allah, më ndihmo të Të përmend, të Të falënderoj dhe të Të adhuroj në mënyrën më të mirë.",
+    src: "Hadith (Abu Dawud). Profeti (a.s.) ia mësoi Muadh ibn Xhebelit.",
+    k: "Ti kërkon ndihmë që të jesh mirënjohës dhe ta bësh adhurimin në mënyrën më të bukur (me cilësi, jo vetëm sasi)." },
+  
+  { t: "Lutja e dashurisë (Davudi a.s.)", c: 3,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ حُبَّكَ، وَحُبَّ مَنْ يُحِبُّكَ، وَحُبَّ عَمَلٍ يُقَرِّبُنِي إِلَى حُبِّكَ.",
+    tr: "Allahumma inni as'aluka hubbaka wa hubba man yuhibbuk, wa hubba 'amalin yuqarribuni ila hubbik.",
+    sq: "O Allah! Unë të kërkoj dashurinë Tënde, dashurinë e atyre që Të duan Ty, dhe dashurinë për çdo vepër që më afron drejt dashurisë Sate.",
+    src: "Hadith (Tirmidhi). Njihet si lutja e Profetit Davud (a.s.).",
+    k: "Ti kërkon dashurinë e Zotit, dashurinë e njerëzve që Ai i do, dhe dëshirën për të bërë punë që të afrojnë te dashuria e Tij." },
+  
+  { t: "Lutja e dritës", c: 3,
+    ar: "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُورًا، وَفِي بَصَرِي نُورًا، وَفِي سَمْعِي نُورًا، وَعَنْ يَمِينِي نُورًا، وَعَنْ يَسَارِي نُورًا، وَفَوْقِي نُورًا، وَتَحْتِي نُورًا، وَأَمَامِي نُورًا، وَخَلْفِي نُورًا.",
+    tr: "Allahummaj'al fi qalbi nura, wa fi basari nura, wa fi sam'i nura, wa 'an yamini nura, wa 'an yasari nura, wa fawqi nura, wa tahti nura, wa amami nura, wa khalfi nura.",
+    sq: "O Allah! Bëj dritë në zemrën time, dritë në shikimin tim, dritë në dëgjimin tim, dritë në të djathtën time, dritë në të majtën time, dritë sipër meje, dritë poshtë meje, dritë para meje dhe dritë pas meje.",
+    src: "Hadith (Bukhari & Muslim). Profeti (a.s.) e thoshte këtë rrugës për në xhami.",
+    k: "Kërkon që drita e udhëzimit të rrethojë çdo shqisë tënden: sytë, veshët, zemrën dhe çdo drejtim të trupit tënd." },
+  
+  { t: "Na e plotëso dritën tonë", c: 3,
+    ar: "رَبَّنَا أَتْمِمْ لَنَا نُورَنَا وَاغْفِرْ لَنَا ۖ إِنَّكَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.",
+    tr: "Rabbana atmim lana nurana waghfir lana, innaka 'ala kulli shay'in qadir.",
+    sq: "Zoti ynë, na e plotëso dritën tonë dhe na fal. Vërtet, Ti je i Plotfuqishëm për çdo gjë.",
+    src: "Kuran (Surja At-Tahrim, 8).",
+    k: "Lutja e besimtarëve në Ditën e Gjykimit që drita e tyre të mos fiket kurrë dhe të plotësohet deri në fund." },
+
+  { t: "Zbukurimi i moralit", c: 3,
+    ar: "اللَّهُمَّ أَنْتَ حَسَّنْتَ خَلْقِي، فَحَسِّنْ خُلُقِي.",
+    tr: "Allahumma Anta hassanta khalqi, fahassin khuluqi.",
+    sq: "O Allah, ashtu siç e ke zbukuruar krijimin tim (pamjen time), ashtu zbukuro edhe moralin tim.",
+    src: "Hadith (Ahmad). Tradicionalisht thuhet kur shihemi në pasqyrë.",
+    k: "“O Allah, Ti ma ke zbukuruar formën fizike, zbukuroje edhe moralin tim.” Është një balancë mes asaj që shihet jashtë dhe asaj që mbajmë brenda." },
+  
+  { t: "Qëndrueshmëri dhe zemër e pastër", c: 3,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الثَّبَاتَ فِي الْأَمْرِ، وَالْعَزِيمَةَ عَلَى الرُّشْدِ، وَأَسْأَلُكَ مُوجِبَاتِ رَحْمَتِكَ، وَعَزَائِمَ مَغْفِرَتِكَ، وَأَسْأَلُكَ شُكْرَ نِعْمَتِكَ، وَحُسْنَ عِبَادَتِكَ، وَأَسْأَلُكَ قَلْبًا سَلِيمًا، وَلِسَانًا صَادِقًا، وَأَسْأَلُكَ مِنْ خَيْرِ مَا تَعْلَمُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا تَعْلَمُ، وَأَسْتَغْفِرُكَ لِمَا تَعْلَمُ، إِنَّكَ أَنْتَ عَلَّامُ الْغُيُوبِ.",
+    tr: "Allahumma inni as'alukath-thabata fil-amri, wal-'azimata 'alar-rushd. Wa as'aluka mujibati rahmatik, wa 'aza'ima maghfiratik, wa as'aluka shukra ni'matik, wa husna 'ibadatik. Wa as'aluka qalban salima, wa lisanan sadiqa. Wa as'aluka min khayri ma ta'lam, wa a'udhu bika min sharri ma ta'lam, wa astaghfiruka lima ta'lam, innaka Anta 'Allamul-ghuyub.",
+    sq: "O Allah, unë kërkoj prej Teje qëndrueshmëri në fe dhe vendosmëri në rrugën e drejtë. Të kërkoj ato vepra që e bëjnë të detyrueshme mëshirën Tënde dhe ato që sjellin patjetër faljen Tënde. Kërkoj aftësinë për të të falënderuar për mirësitë e Tua dhe për të të adhuruar në mënyrën më të mirë. Të kërkoj një zemër të pastër dhe një gjuhë të vërtetë. Të kërkoj më të mirën e asaj që Ti e di, kërkoj mbrojtje te Ti nga e keqja e asaj që Ti e di dhe kërkoj falje për atë që Ti e di. Vërtet, Ti je Njohtës i të fshehtave.",
+    src: "Hadith (Nasa'i & Ahmad).",
+    k: "Një lutje gjithëpërfshirëse për qëndrueshmëri në vendime, një zemër të pastër (salim) dhe një gjuhë të sinqertë." },
+  
+  { t: "Shërimi i mërzisë dhe ankthit", c: 4,
+    ar: "اللَّهُمَّ إِنِّي عَبْدُكَ، ابْنُ عَبْدِكَ، ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ، أَسْأَلُكَ بِكُلِّ اسْمٍ هُوَ لَكَ، سَمَّيْتَ بِهِ نَفْسَكَ، أَوْ أَنْزَلْتَهُ فِي كِتَابِكَ، أَوْ عَلَّمْتَهُ أَحَدًا مِنْ خَلْقِكَ، أَوِ اسْتَأْثَرْتَ بِهِ فِي عِلْمِ الْغَيْبِ عِنْدَكَ، أَنْ تَجْعَلَ الْقُرْآنَ رَبِيعَ قَلْبِي، وَنُورَ صَدْرِي، وَجَلَاءَ حُزْنِي، وَذَهَابَ هَمِّي.",
+    tr: "Allahumma inni 'abduk, ibnu 'abdik, ibnu amatik, nasiyati bi-yadik, madhin fiyya hukmuk, 'adlun fiyya qada'uk. As'aluka bikullismin huwa lak, sammayta bihi nafsak, aw anzaltahu fi kitabik, aw 'allamtahu ahadan min khalqik, awista'tharta bihi fi 'ilmil-ghaybi 'indak, an taj'alal-Qur'ana rabi'a qalbi, wa nura sadri, wa jala'a huzni, wa dhahaba hammi.",
+    sq: "O Allah, unë jam robi Yt, i biri i robit Tënd, i biri i robëreshës Sate. Fati im (balli im) është në Dorën Tënde. Gjykimi Yt mbi mua është i pakthyeshëm, vendimi Yt për mua është i drejtë. Të lutem me çdo emër Tëndin... bëje Kuranin pranverë (gëzim) të zemrës sime, dritë të gjoksit tim, largim të pikëllimit tim dhe heqje të brengës sime.",
+    src: "Hadith (Ahmad).",
+    k: "Dorëzim total te Zoti. Kërkon që Kurani të bëhet “pranvera” e zemrës sate, drita e gjoksit dhe larguesi i çdo brenge." },
+  
+  { t: "Mburoja kundër 8 vështirësive", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ، وَأَعُوذُ بِكَ مِنَ الْجُبْنِ وَالْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ.",
+    tr: "Allahumma inni a'udhu bika minal-hammi wal-hazani, wa a'udhu bika minal-'ajzi wal-kasali, wa a'udhu bika minal-jubni wal-bukhli, wa a'udhu bika min ghalabatid-dayni wa qahrir-rijal.",
+    sq: "O Allah, kërkoj mbrojtjen Tënde nga brenga dhe pikëllimi, dobësia dhe dembelia, frikësimi dhe koprracia, dhe nga rëndesa e borxheve dhe mposhtja nga njerëzit.",
+    src: "Hadith (Bukhari). Profeti (a.s.) e përsëriste shpesh.",
+    k: "Mbrojtje nga: brenga, mërzia, pafuqia, përtacia, frika, koprracia, borxhi i rëndë dhe shtypja nga njerëzit." },
+  
+  { t: "Shëndeti fizik dhe mendor", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْبَرَصِ، وَالْجُنُونِ، وَالْجُذَامِ، وَمِنْ سَيِّئِ الْأَسْقَامِ.",
+    tr: "Allahumma inni a'udhu bika minal-barasi, wal-jununi, wal-judhami, wa min sayyi'il-asqam.",
+    sq: "O Allah! Kërkoj mbrojtjen Tënde nga vitiligo, çmenduria, lebra dhe nga sëmundjet e këqija.",
+    src: "Hadith (Abu Dawud).",
+    k: "Mbrojtje nga sëmundjet e rënda fizike dhe ato mendore." },
+  
+  { t: "Kthimi te Zoti në fatkeqësi", c: 4,
+    ar: "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ، اللَّهُمَّ أْجُرْنِي فِي مُصِيبَتِي وَأَخْلِفْ لِي خَيْرًا مِنْهَا.",
+    tr: "Inna lillahi wa inna ilayhi raji'un. Allahumma'jurni fi musibati wa akhlif li khayran minha.",
+    sq: "Të Allahut jemi dhe tek Ai do të kthehemi. O Allah, më shpërble në fatkeqësinë time dhe ma zëvendëso atë me diçka më të mirë.",
+    src: "Kuran (2:156) dhe Hadith (Muslim).",
+    k: "Thuhet kur humbet diçka. Ti dëshmon se gjithçka i takon Zotit dhe kërkon që Ai të ta zëvendësojë humbjen me diçka më të mirë." },
+  
+  { t: "Mbrojtja nga shirku i pavetëdijshëm", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ أَنْ أُشْرِكَ بِكَ وَأَنَا أَعْلَمُ، وَأَسْتَغْفِرُكَ لِمَا لَا أَعْلَمُ.",
+    tr: "Allahumma inni a'udhu bika an ushrika bika wa ana a'lam, wa astaghfiruka lima la a'lam.",
+    sq: "O Allah, kërkoj mbrojtjen Tënde që të mos bëj shirk (të mos Të shoqëroj me asgjë) me vetëdije, dhe kërkoj faljen Tënde për atë që nuk e di.",
+    src: "Hadith (Ahmad). Njihet si mbrojtja nga Vetëpëlqimi (Rija).",
+    k: "Kërkon falje nëse pa dashje ke kërkuar lavdërimin e njerëzve në vend të Zotit në veprat e tua." },
+  
+  { t: "Mbrojtja me fjalët e përsosura", c: 2,
+    ar: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ، وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ.",
+    tr: "A'udhu bikalimatillahit-tammati min kulli shaytanin wa hammah, wa min kulli 'aynin lammah.",
+    sq: "Kërkoj mbrojtje te fjalët e përsosura të Allahut nga çdo shejtan dhe dëmtues (kafshë a insekt helmues), si dhe nga çdo sy i keq.",
+    src: "Hadith (Bukhari). Profeti (a.s.) ia thoshte nipërve të tij.",
+    k: "Mbrojtje nga çdo e keqe e padukshme, dëmtuesit dhe nga syri i keq (mësyshi)." },
+  
+  { t: "Ruajtja e shqisave", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ شَرِّ سَمْعِي، وَمِنْ شَرِّ بَصَرِي، وَمِنْ شَرِّ لِسَانِي، وَمِنْ شَرِّ قَلْبِي، وَمِنْ شَرِّ مَنِيِّي.",
+    tr: "Allahumma inni a'udhu bika min sharri sam'i, wa min sharri basari, wa min sharri lisani, wa min sharri qalbi, wa min sharri maniyyi.",
+    sq: "O Allah, kërkoj mbrojtjen Tënde nga e keqja e dëgjimit tim, nga e keqja e shikimit tim, nga e keqja e gjuhës sime, nga e keqja e zemrës sime dhe nga e keqja e epshit tim.",
+    src: "Hadith (Abu Dawud).",
+    k: "Mbrojtje nga mëkatet e veshit, syrit, gjuhës, zemrës dhe epshit." },
+  
+  { t: "Rukja e shërimit", c: 2,
+    ar: "بِسْمِ اللَّهِ أَرْقِيكَ، مِنْ كُلِّ شَيْءٍ يُؤْذِيكَ، مِنْ شَرِّ كُلِّ نَفْسٍ أَوْ عَيْنِ حَاسِدٍ، اللَّهُ يَشْفِيكَ، بِسْمِ اللَّهِ أَرْقِيكَ.",
+    tr: "Bismillahi arqik, min kulli shay'in yu'dhik, min sharri kulli nafsin aw 'ayni hasid. Allahu yashfik, bismillahi arqik.",
+    sq: "Me emrin e Allahut të bëj rukje nga çdo gjë që të lëndon, nga e keqja e çdo shpirti ose syri ziliqar. Allahu të shëroftë, me emrin e Allahut të bëj rukje.",
+    src: "Hadith (Muslim). Engjëlli Xhebrail e ka kënduar këtë mbi Profetin (a.s.).",
+    k: "“Në emër të Allahut të bëj rukje...” Kërkim shërimi nga çdo lëndim dhe nga zilia e njerëzve." },
+
+  { t: "Mbrojtja nga padrejtësia", c: 2,
+    ar: "رَبَّنَا لَا تَجْعَلْنَا فِتْنَةً لِلْقَوْمِ الظَّالِمِينَ.",
+    tr: "Rabbana la taj'alna fitnatan lil-qawmidh-dhalimin.",
+    sq: "Zoti ynë, mos na bëj sprovë për popullin zullumqar (të padrejtë).",
+    src: "Kuran (Surja Junus, 85). Lutja e popullit të Musait.",
+    k: "Kërkesë që besimtarët të mos bëhen “shkak” që zullumqarët t'i shtypin apo të tallen me ta." },
+  
+  { t: "Largimi nga paturpësitë", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْفَوَاحِشِ وَالْمُنْكَرِ.",
+    tr: "Allahumma inni a'udhu bika minal-fawahishi wal-munkar.",
+    sq: "O Allah, unë kërkoj mbrojtjen Tënde nga paturpësitë (imoraliteti) dhe nga veprat e këqija.",
+    src: "Inspiruar nga ajetet kuranore për dëlirësinë.",
+    k: "Mbrojtje nga veprat e turpshme dhe gjërat që urrehen nga morali njerëzor." },
+  
+  { t: "Mbrojtja nga ngacmimet e shejtanit", c: 2,
+    ar: "وَقُلْ رَبِّ أَعُوذُ بِكَ مِنْ هَمَزَاتِ الشَّيَاطِينِ * وَأَعُوذُ بِكَ رَبِّ أَنْ يَحْضُرُونِ.",
+    tr: "Wa qur-Rabbi a'udhu bika min hamazatish-shayatin, wa a'udhu bika Rabbi ay-yahdurun.",
+    sq: "Dhe thuaj: “Zoti im, kërkoj mbrojtjen Tënde nga ngacmimet e djajve, dhe kërkoj mbrojtjen Tënde, o Zot, që ata të mos më afrohen.”",
+    src: "Kuran (Surja El-Mu'minun, 97-98).",
+    k: "Mbrojtje nga ngacmimet e brendshme të shejtanit që mund të të çojnë në dyshime apo veprime të gabuara." },
+  
+  { t: "Mbrojtja para mbarimit të namazit", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الْمَسِيحِ الدَّجَّالِ، وَأَعُوذُ بِكَ مِنْ فِتْنَةِ الْمَحْيَا وَالْمَمَاتِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْمَأْثَمِ وَالْمَغْرَمِ.",
+    tr: "Allahumma inni a'udhu bika min 'adhabil-qabr, wa a'udhu bika min fitnatil-Masihid-Dajjal, wa a'udhu bika min fitnatil-mahya wal-mamat. Allahumma inni a'udhu bika minal-ma'thami wal-maghram.",
+    sq: "O Allah, kërkoj mbrojtjen Tënde nga dënimi i varrit, kërkoj mbrojtjen Tënde nga sprova e Mesihut Dexhxhal, dhe kërkoj mbrojtjen Tënde nga sprovat e jetës dhe të vdekjes. O Allah, kërkoj mbrojtjen Tënde nga mëkatet dhe nga borxhi.",
+    src: "Hadith (Bukhari & Muslim). Thuhet para mbarimit të çdo namazi.",
+    k: "Mbrojtje nga dënimi i varrit, sprova e Dexhallit, sprovat e jetës/vdekjes dhe nga borxhet e mëkatet." },
+  
+  { t: "Ruajtja e mirësive", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ زَوَالِ نِعْمَتِكَ، وَتَحَوُّلِ عَافِيَتِكَ، وَفُجَاءَةِ نِقْمَتِكَ، وَجَمِيعِ سَخَطِكَ.",
+    tr: "Allahumma inni a'udhu bika min zawali ni'matik, wa tahawwuli 'afiyatik, wa fuja'ati niqmatik, wa jami'i sakhatik.",
+    sq: "O Allah, kërkoj mbrojtjen Tënde nga humbja e mirësive të Tua, nga largimi i shëndetit që më ke dhënë, nga ndëshkimi Yt i papritur dhe nga çdo gjë që shkakton zemërimin Tënd.",
+    src: "Hadith (Muslim).",
+    k: "Mbrojtje nga largimi i bekimeve, ndryshimi i shëndetit në sëmundje dhe nga zemërimi i papritur i Zotit." },
+  
+  { t: "Mbrojtja nga armiqtë", c: 2,
+    ar: "اللَّهُمَّ اكْفِنِيهِمْ بِمَا شِئْتَ.",
+    tr: "Allahummak-finihim bima shi'ta.",
+    sq: "O Allah, më mbro nga ata (armiqtë) ashtu siç dëshiron Ti.",
+    src: "Hadith (Muslim).",
+    k: "“O Allah, më mbro prej tyre me çfarë të dëshirosh Ti.” Përdoret kur ndihesh i kërcënuar nga dikush." },
+  
+  { t: "Mbrojtja nga morali i keq", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ مُنْكَرَاتِ الْأَخْلَاقِ، وَالْأَعْمَالِ، وَالْأَهْوَاءِ.",
+    tr: "Allahumma inni a'udhu bika min munkaratil-akhlaq, wal-a'mal, wal-ahwa'.",
+    sq: "O Allah, kërkoj mbrojtjen Tënde nga sjelljet, veprat dhe dëshirat e këqija.",
+    src: "Hadith (Tirmidhi).",
+    k: "Mbrojtje nga morali i keq, punët e këqija dhe dëshirat e ulëta." },
+  
+  { t: "Lutja e Musait për mirësi", c: 5,
+    ar: "رَبِّ إِنِّي لِمَا أَنْزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِيرٌ.",
+    tr: "Rabbi inni lima anzalta ilayya min khayrin faqir.",
+    sq: "Zoti im, unë kam nevojë për çfarëdo të mire që Ti ma zbret.",
+    src: "Kuran (Surja El-Kasas, 24). Lutja e Profetit Musa kur ishte i huaj dhe i vetmuar.",
+    k: "“O Zoti im, unë jam vërtet në nevojë për çdo mirësi që Ti zbret tek unë.” Është lutje ideale kur kërkon punë, rrugëzgjidhje apo bekim." },
+  
+  { t: "Dituri, furnizim, vepra të pranuara", c: 5,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا.",
+    tr: "Allahumma inni as'aluka 'ilman nafi'an, wa rizqan tayyiban, wa 'amalan mutaqabbala.",
+    sq: "O Allah! Unë të kërkoj dituri të dobishme, furnizim të mirë (të lejuar) dhe vepra të pranuara.",
+    src: "Hadith (Ibn Majah). Profeti (a.s.) e thoshte pas namazit të Sabahut.",
+    k: "Kërkon tre gjëra: Dituri të dobishme (për ty dhe studentët tuaj), furnizim të mirë dhe punë të pranuara." },
+  
+  { t: "Ma zgjero gjoksin (Musai a.s.)", c: 4,
+    ar: "رَبِّ اشْرَحْ لِي صَدْرِي * وَيَسِّرْ لِي أَمْرِي * وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي * يَفْقَهُوا قَوْلِي.",
+    tr: "Rabbishrah li sadri, wa yassir li amri, wahlul 'uqdatan min lisani, yafqahu qawli.",
+    sq: "Zoti im, ma zgjero gjoksin tim (me qetësi), ma lehtëso punën time dhe ma zgjidh nyjën e gjuhës sime, që ata ta kuptojnë fjalën time.",
+    src: "Kuran (Surja Taha, 25-28). Lutja e Musait para se të përballej me Faraonin.",
+    k: "Hapja e gjoksit (largimi i stresit), lehtësimi i punës dhe zgjidhja e gjuhës që njerëzit të të kuptojnë qartë." },
+
+  { t: "Shpresa e vetme (Duaja e të Pikëlluarit)", c: 4,
+    ar: "اللَّهُمَّ رَحْمَتَكَ أَرْجُو، فَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ، وَأَصْلِحْ لِي شَأْنِي كُلَّهُ، لَا إِلَهَ إِلَّا أَنْتَ.",
+    tr: "Allahumma rahmataka arju fala takilni ila nafsi tarfata 'aynin wa aslih li sha'ni kullahu la ilaha illa Ant.",
+    sq: "O Allah, shpresoj në mëshirën Tënde. Mos më lër në dorë të vetvetes as sa hap e mbyll sytë. M'i rregullo të gjitha çështjet e mia. Nuk ka zot tjetër përveç Teje.",
+    src: "Hadith (Ebu Daud). E njohur si Duaja e të Pikëlluarit (Mekrub).",
+    k: "“O Allah, vetëm mëshirën Tënde e shpresoj, ndaj mos më lër në dorë të vetvetes as sa hap e mbyll sytë...” Është pranimi i dobësisë: nëse Zoti na lë në dorë të egos tonë, qoftë edhe për një sekondë, ne do të dështojmë." },
+  
+  { t: "Çelësi i vështirësive", c: 4,
+    ar: "اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا، وَأَنْتَ تَجْعَلُ الْحَزْنَ سَهْلًا إِذَا شِئْتَ.",
+    tr: "Allahumma la sahla illa ma ja'altahu sahla, wa Anta taj'alul-hazna sahlan idha shi'ta.",
+    sq: "O Allah, nuk ka asgjë të lehtë përveç asaj që Ti e bën të lehtë, dhe Ti e bën vështirësinë të lehtë nëse dëshiron.",
+    src: "Hadith (Ibn Hibban).",
+    k: "“O Allah, nuk ka asgjë të lehtë përveç asaj që Ti e bën të lehtë.” Është duaja absolute para provimeve, sfidave në punë, apo kur përballesh me një problem që duket i pazgjidhshëm. Ai që mund të bëjë fushën me gjemba (hazna) të lehtë, është vetëm Zoti." },
+  
+  { t: "Shëndet në trup e shqisa", c: 2,
+    ar: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ.",
+    tr: "Allahumma 'afini fi badani, Allahumma 'afini fi sam'i, Allahumma 'afini fi basari. La ilaha illa Ant.",
+    sq: "O Allah, më jep shëndet në trupin tim. O Allah, më jep shëndet në dëgjimin tim. O Allah, më jep shëndet në shikimin tim. Nuk ka zot tjetër përveç Teje.",
+    src: "Hadith (Ebu Daud). Pjesë e zikrit të mëngjesit dhe mbrëmjes.",
+    k: "Ti i kërkon Zotit shëndet dhe vitalitet në trupin tënd, në dëgjimin dhe në shikimin tënd. Për dikë që kujdeset për trupin dhe aktivitetin fizik, kjo është kërkesa e përditshme për ta mbajtur “makinerinë” njerëzore në formë të përsosur." },
+  
+  { t: "Mjaftimi me hallall", c: 5,
+    ar: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ.",
+    tr: "Allahummak-fini bihalalika 'an haramik, wa aghnini bifadhlika 'amman siwak.",
+    sq: "O Allah, më mjafto me atë që ke lejuar, që të largohem nga ajo që ke ndaluar, dhe më bëj të pavarur me mirësinë Tënde nga çdokush tjetër përveç Teje.",
+    src: "Hadith (Tirmidhiu).",
+    k: "“O Allah, më mjafto me hallallin Tënd që të mos kem nevojë për haramin Tënd...” Aliu (r.a.) i tha një njeriu të mbytur në borxhe: “Edhe sikur të kesh borxhe sa një mal, po ta thuash këtë, Allahu do t'i shlyejë për ty.”" },
+  
+  { t: "Ya Razzaq — O Furnizues", c: 5,
+    ar: "يَا رَزَّاقُ يَا ذَا الْقُوَّةِ الْمَتِينُ ارْزُقْنِي.",
+    tr: "Ya Razzaq, ya Dhal-quwwatil-matin urzuqni.",
+    sq: "O Furnizues, o Pronar i fuqisë së patundur, më furnizo.",
+    src: "Të bazuara në Kuran dhe Emrat e Bukur të Zotit (Asma ul-Husna).",
+    k: "Këtu je duke e thirrur Zotin me emrin e Tij specifik Er-Rrezak (Ai që furnizon pafundësisht dhe vazhdimisht). Ti nuk po kërkon thjesht “para”, por kërkon furnizim të pamasë (bighajri hisab)." },
+  
+  { t: "Furnizim pa llogari", c: 5,
+    ar: "يَا رَزَّاقُ ارْزُقْنِي بِغَيْرِ حِسَابٍ.",
+    tr: "Ya Razzaqu urzuqni bighayri hisab.",
+    sq: "O Furnizues, më furnizo pa llogari (pa kufij).",
+    src: "Të bazuara në Kuran dhe Emrat e Bukur të Zotit (Asma ul-Husna).",
+    k: "Këtu je duke e thirrur Zotin me emrin e Tij specifik Er-Rrezak. Kërkon furnizim të pamasë, që theu kufijtë e llogaritjeve njerëzore." },
+  
+  { t: "Furnizuesi më i mirë", c: 5,
+    ar: "اللَّهُمَّ ارْزُقْنِي وَأَنْتَ خَيْرُ الرَّازِقِينَ.",
+    tr: "Allahummurzuqni wa Anta khayrur-raziqin.",
+    sq: "O Allah, më furnizo, sepse Ti je Furnizuesi më i mirë.",
+    src: "Të bazuara në Kuran dhe Emrat e Bukur të Zotit (Asma ul-Husna).",
+    k: "Pranimi se edhe pse ne punojmë, rrizku i vërtetë vjen vetëm nga Allahu, i Cili është absolutisht Furnizuesi më i mirë." },
+  
+  { t: "Bereqet në pasuri e fëmijë (Enesi)", c: 5,
+    ar: "اللَّهُمَّ أَكْثِرْ مَالِي، وَوَلَدِي، وَبَارِكْ لِي فِيمَا أَعْطَيْتَنِي.",
+    tr: "Allahumma akthir mali, wa waladi, wa barik li fima a'taytani.",
+    sq: "O Allah, ma shto pasurinë time dhe fëmijët e mi, dhe më jep begati në atë që më ke dhënë.",
+    src: "Hadith (Buhari). Kjo është lutja që Profeti (a.s.) bëri për shërbëtorin e tij të vogël, Enes ibn Malik.",
+    k: "Enesi jetoi mbi 100 vjet, u bë nga njerëzit më të pasur në Medinë dhe pa mbi 100 fëmijë e nipër nga linja e tij. Sekreti i kësaj lutjeje nuk është thjesht shumimi i pasurisë, por fjala e fundit: “më jep bereqet në to”." },
+  
+  { t: "Lutja e Ejubit (a.s.)", c: 4,
+    ar: "رَبِّ أَنِّي مَسَّنِيَ الضُّرُّ وَأَنْتَ أَرْحَمُ الرَّاحِمِينَ.",
+    tr: "Rabbi inni massaniyad-durru wa Anta Arhamur-rahimin.",
+    sq: "Zoti im, mua më ka goditur fatkeqësia dhe Ti je Mëshiruesi më i madh i të mëshirshmëve.",
+    src: "Kuran (El-Enbija, 83).",
+    k: "“O Zoti im, mua më ka goditur e keqja (sëmundja/vuajtja), e Ti je Mëshiruesi më i madh.” Ky është kulmi i edukatës. Ejubi nuk tha “O Zot më shëro pse më le kështu”, por thjesht paraqiti gjendjen e tij me përulësi, dhe Zoti e shëroi menjëherë." },
+  
+  { t: "Ya Hayyu Ya Qayyum (stresi urgjent)", c: 4,
+    ar: "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.",
+    tr: "Ya Hayyu Ya Qayyum, birahmatika astaghith. Aslih li sha'ni kullahu, wa la takilni ila nafsi tarfata 'ayn.",
+    sq: "O i Gjallë përgjithmonë, o i Përjetshëm, me mëshirën Tënde kërkoj ndihmë! M'i rregullo të gjitha punët e mia dhe mos më lër në dorën e vetvetes sime as sa hap e mbyll sytë.",
+    src: "Hadith (Tirmidhiu). E thoshte Profeti (a.s.) kur e kaplonte një situatë tepër emergjente.",
+    k: "“O i Gjalli përgjithmonë, O Mbajtësi i çdo gjëje, kërkoj ndihmë me mëshirën Tënde!” Është një lutje që e rregullon çështjen që nga rrënja, duke mos u mbështetur te vetja as për një çast." },
+
+  { t: "Falje, shtëpi e gjerë, rrizk me bereqet", c: 5,
+    ar: "اللَّهُمَّ اغْفِرْ لِي ذَنْبِي، وَوَسِّعْ لِي فِي دَارِي، وَبَارِكْ لِي فِي رِزْقِي.",
+    tr: "Allahummaghfir li dhanbi, wa wassi' li fi dari, wa barik li fi rizqi.",
+    sq: "O Allah, më fal mëkatin tim, ma zgjero shtëpinë time dhe ma begato furnizimin tim.",
+    src: "Hadith (Tirmidhiu).",
+    k: "Kërkon tre gjëra thelbësore për një jetë të qetë: falje për mëkatet, një shtëpi të gjerë (fizikisht ose shpirtërisht pa strese brenda saj), dhe bereqet në fitim." },
+  
+  { t: "Lutja e rrizkut nga çdo drejtim", c: 5,
+    ar: "اللَّهُمَّ إِنْ كَانَ رِزْقِي فِي السَّمَاءِ فَأَنْزِلْهُ، وَإِنْ كَانَ فِي الْأَرْضِ فَأَخْرِجْهُ، وَإِنْ كَانَ بَعِيدًا فَقَرِّبْهُ، وَإِنْ كَانَ مُعَسَّرًا فَيَسِّرْهُ، وَإِنْ كَانَ حَرَامًا فَطَهِّرْهُ، بِحَقِّ ضُحَائِكَ وَبَهَائِكَ وَجَمَالِكَ وَقُوَّتِكَ وَقُدْرَتِكَ.",
+    tr: "Allahumma in kana rizqi fis-sama'i fa-anzilhu, wa in kana fil-ardhi fa-akhrijhu, wa in kana ba'idan faqarribhu, wa in kana mu'assaran fayassirhu, wa in kana haraman fatahhirhu, bihaqqi dhuha'ika wa baha'ika wa jamalika wa quwwatika wa qudratik.",
+    sq: "O Allah, nëse furnizimi im është në qiell, atëherë ma zbrit atë; nëse është në tokë, ma nxirr atë; nëse është larg, ma afro; nëse është i vështirë, ma lehtëso; e nëse është i ndaluar, ma pastro. (Të lutem) Për hir të dritës Sate (të paradites), shkëlqimit Tënd, bukurisë Sate, fuqisë Sate dhe pushtetit Tënd.",
+    src: "Lutje e mirë dhe shumë e përhapur në traditën islame.",
+    k: "“Nëse rrizku im është në qiell, zbrite; nëse është në tokë, nxirre; nëse është larg, afroje; nëse është vështirë, lehtësoje; nëse është i papastër, pastroje...” Shpreh idenë se Krijuesi e kontrollon riskun në çdo dimension." },
+  
+  { t: "Gëzimi i syve (familja)", c: 6,
+    ar: "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا.",
+    tr: "Rabbana hab lana min azwajina wa dhurriyyatina qurrata a'yunin waj'alna lil-muttaqina imama.",
+    sq: "Zoti ynë! Na dhuro nga bashkëshortet dhe pasardhësit tanë gëzim për sytë tanë, dhe na bëj prijës të të devotshmëve.",
+    src: "Kuran (El-Furkan, 74). Lutja e robërve të Rrahmanit.",
+    k: "Kërkon që bashkëshortja dhe fëmijët të të sjellin “qetësi/dritë në sy” (pra të mos sjellin kokëçarje apo dëshpërim) dhe që ti të jesh një lider e model për njerëzit e mirë." },
+  
+  { t: "Për prindërit", c: 6,
+    ar: "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا.",
+    tr: "Rabbir-hamhuma kama rabbayani saghira.",
+    sq: "Zoti im, mëshiroji ata të dy (prindërit e mi), ashtu siç u kujdesën për mua kur isha i vogël.",
+    src: "Kuran (El-Isra, 24).",
+    k: "“O Zoti im, ki mëshirë për ta (prindërit e mi), ashtu siç patën mëshirë ata kur po më rrisnin kur isha i vogël.” Është mënyra më e lartë për t'u kthyer hakun prindërve." },
+  
+  { t: "Zgjidhja e fjalëve të këqija", c: 7,
+    ar: "اللَّهُمَّ فَأَيُّمَا مُؤْمِنٍ سَبَبْتُهُ فَاجْعَلْ ذَلِكَ لَهُ قُرْبَةً إِلَيْكَ يَوْمَ الْقِيَامَةِ.",
+    tr: "Allahumma fa-ayyuma mu'minin sababtuhu, faj'al dhalika lahu qurbatan ilayka yawmal-qiyamah.",
+    sq: "O Allah, nëse kam fyer (ose lënduar) ndonjë besimtar, bëje këtë si një afrim për të tek Ti në Ditën e Kiametit.",
+    src: "Hadith (Buhari/Muslim).",
+    k: "Profeti (a.s.) i lutej Zotit: “Nëse si njeri jam treguar i ashpër apo e kam ofenduar ndonjë besimtar, bëje këtë ofendim si një mjet që ai të afrohet te Ti në Ditën e Gjykimit.” Një garanci hyjnore kundër padrejtësive." },
+  
+  { t: "Falje për të gjithë besimtarët", c: 7,
+    ar: "اللَّهُمَّ اغْفِرْ لِلْمُسْلِمِينَ وَالْمُسْلِمَاتِ، وَالْمُؤْمِنِينَ وَالْمُؤْمِنَاتِ، الْأَحْيَاءِ مِنْهُمْ وَالْأَمْوَاتِ.",
+    tr: "Allahummaghfir lil-muslimina wal-muslimat, wal-mu'minina wal-mu'minat, al-ahya'i minhum wal-amwat.",
+    sq: "O Allah, fali të gjithë muslimanët dhe muslimanet, besimtarët dhe besimtaret, ata që janë gjallë prej tyre dhe ata që kanë vdekur.",
+    src: "Hadith (Taberani). Njihet si “Miliona Shpërblime në një Fjali”.",
+    k: "Kërkon falje për çdo besimtar (të gjallë e të vdekur). Profeti (a.s.) tha se kush e thotë këtë lutje, i shkruhet një e mirë (hasenat) për çdo besimtar që ka ekzistuar ndonjëherë në tokë!" },
+  
+  { t: "Lutja e Zekerijas për pasardhës", c: 6,
+    ar: "رَبِّ هَبْ لِي مِنْ لَدُنْكَ ذُرِّيَّةً طَيِّبَةً ۖ إِنَّكَ سَمِيعُ الدُّعَاءِ.",
+    tr: "Rabbi hab li min ladunka dhurriyyatan tayyibah, innaka sami'ud-du'a.",
+    sq: "Zoti im, më dhuro nga ana Jote pasardhës të mirë. Vërtet, Ti je Dëgjuesi i lutjeve.",
+    src: "Kuran (Al Imran 38).",
+    k: "Kjo është lutja më e fuqishme për këdo që dëshiron të krijojë familje dhe të ketë fëmijë të mbarë. Zekerija u lut kur ishte plak, dhe Zoti i theu ligjet e biologjisë duke i dhënë djalin e tij Jahja (a.s.)." },
+  
+  { t: "Mos më lër të vetmuar", c: 6,
+    ar: "رَبِّ لَا تَذَرْنِي فَرْدًا وَأَنْتَ خَيْرُ الْوَارِثِينَ.",
+    tr: "Rabbi la tadharni fardan wa Anta khayrul-warithin.",
+    sq: "Zoti im, mos më lër të vetmuar (pa fëmijë/pasardhës), e Ti je Trashëgimtari më i mirë.",
+    src: "Kuran (El-Enbija 89). Lutja e Zekerijas.",
+    k: "Vazhdimi i lutjeve të Zekerias (a.s.). Edhe kur gjithçka duket e pamundur nga ana mjekësore, lidhja me “Trashëgimtarin më të mirë” sjell mrekulli." },
+  
+  { t: "Ndërtuesi i namazit (Ibrahimi a.s.)", c: 6,
+    ar: "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِنْ ذُرِّيَّتِي ۚ رَبَّنَا وَتَقَبَّلْ دُعَاءِ.",
+    tr: "Rabbij'alni muqimas-salati wa min dhurriyyati, Rabbana wa taqabbal du'a.",
+    sq: "Zoti im, më bëj mua falës të namazit, e po ashtu edhe prej pasardhësve të mi! Zoti ynë, dhe pranoje lutjen time!",
+    src: "Kuran (Ibrahim, 40). Lutja e Ibrahimit (a.s.).",
+    k: "Vini re fjalën: Ai nuk thotë thjesht “më bëj që të falem”, por “më bëj Muqim” (Atë që e ndërton, e mban gjallë dhe është stabil në namaz, unë dhe gjithë pasardhësit e mi)." },
+  
+  { t: "Master-Duaja e Aishes", c: 7,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنَ الْخَيْرِ كُلِّهِ عَاجِلِهِ وَآجِلِهِ، مَا عَلِمْتُ مِنْهُ وَمَا لَمْ أَعْلَمْ، وَأَعُوذُ بِكَ مِنَ الشَّرِّ كُلِّهِ عَاجِلِهِ وَآجِلِهِ، مَا عَلِمْتُ مِنْهُ وَمَا لَمْ أَعْلَمْ. اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ خَيْرِ مَا سَأَلَكَ عَبْدُكَ وَنَبِيُّكَ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا عَاذَ بِهِ عَبْدُكَ وَنَبِيُّكَ. اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَمَا قَرَّبَ إِلَيْهَا مِنْ قَوْلٍ أَوْ عَمَلٍ، وَأَعُوذُ بِكَ مِنَ النَّارِ وَمَا قَرَّبَ إِلَيْهَا مِنْ قَوْلٍ أَوْ عَمَلٍ، وَأَسْأَلُكَ أَنْ تَجْعَلَ كُلَّ قَضَاءٍ قَضَيْتَهُ لِي خَيْرًا.",
+    tr: "Allahumma inni as'aluka minal-khayri kullihi, 'ajilihi wa ajilihi, ma 'alimtu minhu wa ma lam a'lam. Wa a'udhu bika minash-sharri kullihi, 'ajilihi wa ajilihi, ma 'alimtu minhu wa ma lam a'lam. Allahumma inni as'aluka min khayri ma sa'alaka 'abduka wa Nabiyyuk, wa a'udhu bika min sharri ma 'adha minhu 'abduka wa Nabiyyuk. Allahumma inni as'alukal-jannata wa ma qarraba ilayha min qawlin aw 'amal, wa a'udhu bika minan-nari wa ma qarraba ilayha min qawlin aw 'amal, wa as'aluka an taj'ala kulla qada'in qadaytahu li khayran.",
+    sq: "O Allah, unë të kërkoj çdo të mirë, të menjëhershme dhe të ardhshme, atë që e di dhe atë që nuk e di. Dhe kërkoj mbrojtjen Tënde nga çdo e keqe, e menjëhershme dhe e ardhshme, atë që e di dhe atë që nuk e di... Dhe të kërkoj që çdo caktim që ke vendosur për mua, ta bësh të mirë për mua.",
+    src: "Hadith (Ibn Maxheh/Ahmedi).",
+    k: "Profeti (a.s.) e pa Aishen duke u lutur gjatë dhe i tha ta përmblidhte me këtë lutje. Nëse nuk ke kohë për duatë e tjera, kjo i përmbledh absolutisht të gjitha." },
+
+  { t: "Çelësi universal", c: 7,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ خَيْرِ مَا سَأَلَكَ مِنْهُ نَبِيُّكَ مُحَمَّدٌ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا اسْتَعَاذَ مِنْهُ نَبِيُّكَ مُحَمَّدٌ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ، وَأَنْتَ الْمُسْتَعَانُ، وَعَلَيْكَ الْبَلَاغُ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ.",
+    tr: "Allahumma inni as'aluka min khayri ma sa'alaka minhu Nabiyyuka Muhammadun (s.a.v.s.). Wa a'udhu bika min sharri masta'adha minhu Nabiyyuka Muhammadun (s.a.v.s.). Wa Antal-Musta'an, wa 'alaykal-balagh, wa la hawla wa la quwwata illa billah.",
+    sq: "O Allah, të kërkoj nga e mira që Të kërkoi Profeti Yt Muhamed dhe kërkoj mbrojtje tek Ti nga e keqja për të cilën kërkoi mbrojtje Profeti Yt Muhamed. Ti je Ai tek i cili kërkohet ndihmë, dhe tek Ti është mbështetja. Nuk ka ndryshim e as fuqi përveçse me ndihmën e Allahut.",
+    src: "Hadith (Tirmidhiu). E transmeton Ebu Umame.",
+    k: "Sahabët iu ankuan Profetit (a.s.) se ai bënte aq shumë lutje saqë nuk i mbanin mend dot. Profeti u dha këtë “master-kod”. Kjo i përmbledh fjalë për fjalë të gjitha lutjet e botës në dy rreshta." },
+  
+  { t: "Kura kundër ankthit e nxitimit", c: 4,
+    ar: "اللَّهُمَّ رَضِّنِي بِقَضَائِكَ، وَبَارِكْ لِي فِيمَا قُدِّرَ لِي حَتَّى لَا أُحِبَّ تَعْجِيلَ مَا أَخَّرْتَ، وَلَا تَأْخِيرَ مَا عَجَّلْتَ.",
+    tr: "Allahumma raddini biqada'ik, wa barik li fima quddira li hatta la uhibba ta'jila ma akhkhart, wa la ta'khira ma 'ajjalt.",
+    sq: "O Allah, më bëj të kënaqur me caktimin Tënd dhe më jep begati në atë që është caktuar për mua, në mënyrë që të mos dëshiroj shpejtimin e asaj që e ke vonuar, as vonimin e asaj që e ke shpejtuar.",
+    src: "Hadith / Traditë profetike.",
+    k: "Kjo është kura përfundimtare kundër stresit të pritjes. Kur e do diçka me ngulm tani, kjo lutje i thotë zemrës: “Koha e Zotit është më e mirë se ora ime.”" },
+  
+  { t: "Mirësia dhe mëshira Jote", c: 5,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ وَرَحْمَتِكَ، فَإِنَّهُ لَا يَمْلِكُهَا إِلَّا أَنْتَ.",
+    tr: "Allahumma inni as'aluka min fadlika wa rahmatika, fa-innahu la yamlikuha illa Ant.",
+    sq: "O Allah, unë të kërkoj Ty nga mirësia (të mirat) dhe mëshira Jote, sepse vërtet askush nuk i posedon ato përveç Teje.",
+    src: "Hadith (Tabarani/Bayhaqi).",
+    k: "Duaja e rrizkut dhe e ndihmës së shpejtë. Profeti (s.a.v.s.) e bëri këtë lutje kur një mysafir erdhi dhe nuk kishte ushqim në shtëpi. Menjëherë pas kësaj, dikush i solli një mish qengji të gatuar." },
+  
+  { t: "Lutja e Djelmoshave të Shpellës", c: 4,
+    ar: "رَبَّنَا آتِنَا مِنْ لَدُنْكَ رَحْمَةً وَهَيِّئْ لَنَا مِنْ أَمْرِنَا رَشَدًا.",
+    tr: "Rabbana atina min ladunka rahmatan wa hayyi' lana min amrina rashada.",
+    sq: "Zoti ynë, na dhuro mëshirë nga ana Jote dhe na e bëj të mbarë çështjen tonë në rrugë të drejtë.",
+    src: "Kuran (Surja El-Kehf, Ajeti 10).",
+    k: "Kur Djelmoshat e Shpellës ishin të rrethuar nga një ushtri që donte t'i vriste dhe u futën në një shpellë të errët e të ftohtë, ata kërkuan Rrahmet (Mëshirë) dhe Rreshad (Rrugëzgjidhje të drejtë). Përdoret kur je në një rrugë pa dalje." },
+  
+  { t: "Monopoli i Zotit mbi mirësinë", c: 5,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ وَرَحْمَتِكَ، فَإِنَّهُ لَا يَمْلِكُهَا إِلَّا أَنْتَ.",
+    tr: "Allahumma inni as'aluka min fadlika wa rahmatik, fa-innahu la yamlikuha illa Ant.",
+    sq: "O Allah, unë të kërkoj nga mirësia dhe mëshira Jote, sepse ato nuk i zotëron askush tjetër përveç Teje.",
+    src: "Hadith (Taberani). Profeti (a.s.) e thoshte këtë kur kishte mungesë ushqimi apo vështirësi financiare.",
+    k: "“O Allah, të kërkoj nga Mirësia Jote dhe Mëshira Jote, sepse askush nuk i zotëron ato përveç Teje.” Pas kësaj lutjeje, tradita tregon se atij gjithmonë i vinte një furnizim i papritur." },
+  
+  { t: "Mburoja e Hekurt (6 drejtimet)", c: 2,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي.",
+    tr: "Allahumma inni as'alukal-'afwa wal-'afiyah fid-dunya wal-akhirah. Allahumma inni as'alukal-'afwa wal-'afiyah fi dini wa dunyaya wa ahli wa mali. Allahummastur 'awrati wa amin raw'ati. Allahummahfazni min bayni yadayya, wa min khalfi, wa 'an yamini, wa 'an shimali, wa min fawqi, wa a'udhu bi'adhamatika an ughtala min tahti.",
+    sq: "O Allah, unë të kërkoj falje dhe mirëqenie (shëndet e shpëtim) në këtë botë dhe në Ahiret. O Allah, të kërkoj falje dhe mirëqenie në fenë time, në jetën time të kësaj bote, në familjen time dhe në pasurinë time. O Allah, m'i mbulo të metat e mia dhe qetësoje frikën time. O Allah, më ruaj nga para dhe nga prapa, nga e djathta dhe nga e majta, si dhe nga lart, dhe kërkoj mbrojtje me Madhështinë Tënde që të mos gëlltitem (të mos dëmtohem papritur) nga poshtë meje.",
+    src: "Hadith (Ebu Daud/Ibn Maxheh).",
+    k: "Fillon duke kërkuar Afije (mirëqenie/siguri absolute) në fe, në jetë, në familje dhe në pasuri. Pastaj vendos “mburojën fizike” nga gjashtë drejtimet." },
+  
+  { t: "Shpirti i qetë", c: 4,
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ نَفْسًا مُطْمَئِنَّةً، تُؤْمِنُ بِلِقَائِكَ، وَتَرْضَى بِقَضَائِكَ، وَتَقْنَعُ بِعَطَائِكَ.",
+    tr: "Allahumma inni as'aluka nafsan mutma'innah, tu'minu bi-liqa'ik, wa tardha bi-qada'ik, wa taqna'u bi-'ata'ik.",
+    sq: "O Allah, unë të kërkoj një shpirt të qetë, që beson në takimin me Ty, që është i kënaqur me caktimin Tënd dhe që mjaftohet me atë që i ke dhënë.",
+    src: "Hadith (Taberani).",
+    k: "Çfarë e bën shpirtin të qetë? Tre gjëra që i përmend duaja: Besimi i thellë se do ta takojë Zotin, kënaqësia me çfarë i ka caktuar fati, dhe të qenit i ngopur (pa lakmi) me aq sa i është dhënë." },
+  
+  { t: "Lutja e luftëtarëve (durim)", c: 4,
+    ar: "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا وَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ.",
+    tr: "Rabbana afrigh 'alayna sabran wa thabbit aqdamana wansurna 'alal-qawmil-kafirin.",
+    sq: "Zoti ynë, derdh mbi ne durim, na i përforco këmbët tona dhe na ndihmo kundër popullit mosbesimtar!",
+    src: "Kuran (Surja El-Bekare, 250).",
+    k: "Lutja e ushtrisë së vogël të mbretit Talut (dhe profetit Davud) kur po përballeshin me Xhalutin (Goliath). Fjala Afrigh do të thotë “zbraz/derdh mbi ne durim” për të mos ikur nga beteja." },
+  
+  { t: "Vulimi i veprave të mira", c: 7,
+    ar: "رَبَّنَا تَقَبَّلْ مِنَّا ۖ إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ.",
+    tr: "Rabbana taqabbal minna innaka Antas-Sami'ul-'Alim.",
+    sq: "Zoti ynë, pranoje prej nesh (veprën tonë)! Vërtet, Ti je Dëgjuesi, i Gjithëdijshmi.",
+    src: "Kuran (Surja El-Bekare, 127).",
+    k: "Profeti Ibrahim (a.s.) dhe djali i tij Ismaili (a.s.) e thanë këtë pasi mbaruan së ndërtuari Qaben. Tregon se asnjë vepër nuk vlen nëse Zoti nuk ia vendos vulën e pranimit." }
+];
+
+const $ = id => document.getElementById(id);
+let favs = new Set();
+let activeCat = -1;        // -1 = të gjitha, -2 = të preferuarat
+let filtered = DUAS.map((_,i)=>i);
+let currentIdx = null;     // index into DUAS
+
+// Font size management (Base sizes)
+let fontSizeTr = 18;  // Transliteration base size
+let fontSizeSq = 17;  // Albanian base size
+let fontSizeAr = 28;  // Arabic base size
+const FONT_MIN = 12, FONT_MAX = 36, FONT_STEP = 2;
+
+/* ---- favorites persistence ---- */
+async function loadFavs(){
+  try{
+    const r = await window.storage.get("dua-favs");
+    if (r && r.value) favs = new Set(JSON.parse(r.value));
+  }catch(e){ /* s'ka të ruajtura ende */ }
+  renderList();
+}
+async function saveFavs(){
+  try{ await window.storage.set("dua-favs", JSON.stringify([...favs])); }catch(e){}
+}
+
+/* ---- chips ---- */
+const chipsEl = $("chips");
+function makeChip(label, cat){
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = label;
+  b.dataset.cat = cat;
+  b.addEventListener("click", () => { activeCat = cat; renderChips(); renderList(); });
+  chipsEl.appendChild(b);
+}
+makeChip("Të gjitha", -1);
+makeChip("\u2605 Të preferuarat", -2);
+CATS.forEach((c,i)=>makeChip(c,i));
+
+function renderChips(){
+  chipsEl.querySelectorAll(".chip").forEach(ch=>{
+    ch.classList.toggle("active", Number(ch.dataset.cat) === activeCat);
+  });
+}
+renderChips();
+
+function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+function renderList(){
+  const q = norm($("search").value.trim());
+  filtered = [];
+  DUAS.forEach((d,i)=>{
+    if (activeCat >= 0 && d.c !== activeCat) return;
+    if (activeCat === -2 && !favs.has(i)) return;
+    if (q && !(norm(d.t).includes(q) || norm(d.tr).includes(q) || norm(d.sq).includes(q))) return;
+    filtered.push(i);
+  });
+  const list = $("duaList");
+  list.innerHTML = "";
+  filtered.forEach(i=>{
+    const d = DUAS[i];
+    const b = document.createElement("button");
+    b.className = "dua-card";
+    b.innerHTML =
+      '<span class="dc-body">' +
+        '<span class="dc-title"><span style="color:var(--gold)">' + (i+1) + '.</span> ' + d.t + '</span>' +
+        '<span class="dc-prev">' + d.tr.slice(0,70) + '\u2026</span>' +
+      '</span>' +
+      '<span class="dc-star' + (favs.has(i) ? ' on' : '') + '">\u2605</span>';
+    b.addEventListener("click", ()=>openDua(i));
+    list.appendChild(b);
+  });
+  $("count").textContent = filtered.length + (filtered.length === 1 ? " dua" : " dua") + (activeCat === -2 ? " të preferuara" : "");
+  $("emptyMsg").style.display = filtered.length ? "none" : "block";
+}
+$("search").addEventListener("input", renderList);
+
+/* ---- detail ---- */
+function applyFontSizes() {
+  $("dAr").style.fontSize = fontSizeAr + "px";
+  $("dTr").style.fontSize = fontSizeTr + "px";
+  $("dSq").style.fontSize = fontSizeSq + "px";
+}
+
+function openDua(i){
+  currentIdx = i;
+  $("home").classList.add("hidden");
+  $("detail").classList.add("open");
+  renderDetail();
+}
+
+function closeDetail(){
+  currentIdx = null;
+  $("detail").classList.remove("open");
+  $("home").classList.remove("hidden");
+  renderList();
+}
+
+function renderDetail(){
+  const d = DUAS[currentIdx];
+  const pos = filtered.indexOf(currentIdx);
+  $("dIdx").textContent = "Dua " + (currentIdx+1) + " / " + DUAS.length;
+  $("dCat").textContent = CATS[d.c];
+  $("dTitle").textContent = d.t;
+  $("dAr").textContent = d.ar;
+  $("dTr").textContent = d.tr;
+  $("dSq").textContent = d.sq;
+  $("dInfoBody").innerHTML = "<p><strong>Burimi:</strong> " + d.src + "</p><p><strong>Kuptimi:</strong> " + d.k + "</p>";
+  
+  applyFontSizes();
+  
+  $("btnFav").classList.toggle("on", favs.has(currentIdx));
+  $("btnPrev").disabled = pos <= 0;
+  $("btnNext").disabled = pos < 0 || pos >= filtered.length - 1;
+  $("dScroll").scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+$("btnBack").addEventListener("click", closeDetail);
+
+$("btnPrev").addEventListener("click", ()=>{
+  const pos = filtered.indexOf(currentIdx);
+  if (pos > 0){ currentIdx = filtered[pos-1]; renderDetail(); }
+});
+
+$("btnNext").addEventListener("click", ()=>{
+  const pos = filtered.indexOf(currentIdx);
+  if (pos >= 0 && pos < filtered.length-1){ currentIdx = filtered[pos+1]; renderDetail(); }
+});
+
+$("btnFav").addEventListener("click", ()=>{
+  if (favs.has(currentIdx)) favs.delete(currentIdx); else favs.add(currentIdx);
+  $("btnFav").classList.toggle("on", favs.has(currentIdx));
+  saveFavs();
+});
+
+$("fontUp").addEventListener("click", ()=>{
+  if (fontSizeTr < FONT_MAX) {
+    fontSizeTr += FONT_STEP;
+    fontSizeSq += FONT_STEP;
+    fontSizeAr += Math.round(FONT_STEP * 1.5); // Arabic scales slightly faster for readability
+    applyFontSizes();
+  }
+});
+
+$("fontDown").addEventListener("click", ()=>{
+  if (fontSizeTr > FONT_MIN) {
+    fontSizeTr -= FONT_STEP;
+    fontSizeSq -= FONT_STEP;
+    fontSizeAr -= Math.round(FONT_STEP * 1.5);
+    applyFontSizes();
+  }
+});
+
+// Initialize App
+loadFavs();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered', reg.scope))
+      .catch(err => console.log('SW registration failed', err));
+  });
+}
+</script>
+</body>
+</html>

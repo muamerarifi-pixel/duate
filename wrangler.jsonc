@@ -1,0 +1,17 @@
+// Duatë pas Namazit on Cloudflare: the app is the files in public/, served as static assets.
+// Every push to main is deployed by Workers Builds to https://duate.muamer-arifi.workers.dev
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "duate",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true
+  }
+}
