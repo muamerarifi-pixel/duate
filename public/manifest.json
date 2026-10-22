@@ -2,7 +2,7 @@
   "name": "Duatë pas Namazit",
   "short_name": "Duatë",
   "description": "74 lutje me tekst arab me hareke, transliterim, përkthim shqip, burim dhe kuptim.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0E1A1D",
