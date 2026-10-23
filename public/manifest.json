@@ -3,14 +3,17 @@
   "short_name": "Duatë",
   "description": "74 lutje me tekst arab me hareke, transliterim, përkthim shqip, burim dhe kuptim.",
   "start_url": "./",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0E1A1D",
   "theme_color": "#D3A94C",
   "lang": "sq",
   "dir": "ltr",
-  "categories": ["lifestyle", "education", "books"],
+  "categories": [
+    "lifestyle",
+    "education",
+    "books"
+  ],
   "icons": [
     {
       "src": "icons/icon-72.png",
