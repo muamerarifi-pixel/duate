@@ -1,4 +1,4 @@
-const CACHE_NAME = 'duate-pas-namazit-v2';
+const CACHE_NAME = 'duate-pas-namazit-v3';
 const ASSETS = [
   './',
   './manifest.json',
